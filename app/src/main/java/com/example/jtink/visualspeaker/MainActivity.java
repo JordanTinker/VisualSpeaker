@@ -96,6 +96,11 @@ public class MainActivity extends AppCompatActivity {
                 mSocket = new ServerSocket(8888);
                 Log.d("Group", "SocketAddr= " + mSocket.getInetAddress().toString());
                 mClient = mSocket.accept();
+                Context context = MainActivity.this;
+                String text = "Connection achieved";
+                int duration = Toast.LENGTH_SHORT;
+
+                Toast.makeText(context, text, duration).show();
                 Log.d("Group", "Connection achieved");
                 connected = true;
                 mStream = mClient.getOutputStream();
@@ -330,11 +335,6 @@ public class MainActivity extends AppCompatActivity {
     private AdapterView.OnItemClickListener mMessageClickedHandler = new AdapterView.OnItemClickListener() {
         public void onItemClick(AdapterView parent, View v, int position, long id) {
             // Do something in response to the click
-            /*
-            if (songListView != null) {
-                songListView.getChildAt(position).setBackgroundColor(Color.BLUE);
-            }
-            */
             currentSongPath = songs.get(position).getName(position) + ".wav";
         }
     };

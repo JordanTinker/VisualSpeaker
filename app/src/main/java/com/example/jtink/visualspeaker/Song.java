@@ -38,7 +38,27 @@ public class Song {
 
         else if(position==3)
         {
-            toReturn = "seven_nation_army";
+            toReturn = "lets_dance";
+        }
+
+        else if(position==4)
+        {
+            toReturn = "levels";
+        }
+
+        else if(position==5)
+        {
+            toReturn = "you_make_my_dreams";
+        }
+
+        else if(position==6)
+        {
+            toReturn = "james_bond_theme";
+        }
+
+        else if(position==7)
+        {
+            toReturn = "next_to_you";
         }
         return toReturn;
     }
@@ -59,9 +79,13 @@ public class Song {
         ArrayList<Song> songs = new ArrayList<Song>();
         //ArrayList<Song> songs;
         songs.add(new Song("Harder, Better, Faster, Stronger"));
-        songs.add(new Song("Fireworks"));
+        songs.add(new Song("Firework"));
         songs.add(new Song("Titanium"));
-        songs.add(new Song("Seven Nation Army"));
+        songs.add(new Song("Let's Dance"));
+        songs.add(new Song("Levels"));
+        songs.add(new Song("You Make My Dreams"));
+        songs.add(new Song("James Bond Theme"));
+        songs.add(new Song("Next To You"));
         return songs;
     }
 }
