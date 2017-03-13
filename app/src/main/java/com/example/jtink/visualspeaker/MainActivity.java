@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pManager;
@@ -12,11 +13,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.net.ServerSocket;
@@ -37,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayAdapter<Song> songAdapter;
     ListView songListView;
+    ArrayList<Song> songs;
 
     ServerSocket mSocket;
     Socket mClient;
@@ -49,10 +53,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //String[] songs = {"Harder, Better, Faster, Stronger", "Fireworks", "Titanium", "Seven Nation Army"};
-        ArrayList<Song> songs = Song.test();
+        songs = Song.test();
         songAdapter = new ArrayAdapter<Song>(this, android.R.layout.simple_list_item_1, songs);
         songListView = (ListView) findViewById(R.id.listView);
         songListView.setAdapter(songAdapter);
+        songListView.setOnItemClickListener(mMessageClickedHandler);
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
@@ -109,11 +114,10 @@ public class MainActivity extends AppCompatActivity {
                 }
                 mGroup = new WifiP2pGroup(group);
                 connectedList = mGroup.getClientList();
-                if(connectedList.size() == 0) {
+                if (connectedList.size() == 0) {
                     Log.d("Group", "No devices connected");
 
-                }
-                else {
+                } else {
                     List<WifiP2pDevice> devList = new ArrayList(connectedList);
                     String devName = devList.get(0).deviceAddress;
                     Log.d("Group", "Connected to: " + devName);
@@ -125,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        if(connectedList.size() == 0)
+        if (connectedList.size() == 0)
             return false;
         else
             return true;
@@ -137,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void makeGroup() {
         //create group and establish connection
-        if(mGroup != null) {
+        if (mGroup != null) {
             mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
                 @Override
                 public void onSuccess() {
@@ -146,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
                         public void onSuccess() {
                             Log.d("Group", "Group created successfully");
                         }
+
                         public void onFailure(int reason) {
                             Log.d("Group", "Group creation failed with error= " + reason);
                         }
@@ -157,13 +162,13 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             });
-        }
-        else {
+        } else {
             mManager.createGroup(mChannel, new WifiP2pManager.ActionListener() {
                 @Override
                 public void onSuccess() {
                     Log.d("Group", "Group2 created successfully");
                 }
+
                 public void onFailure(int reason) {
                     Log.d("Group", "Group creation failed with error= " + reason);
                 }
@@ -202,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
         registerReceiver(mReceiver, mIntentFilter);
 
@@ -232,10 +237,10 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Called when the transfer button is pressed
+     *
      * @param view
      */
-    public void transferSong(View view)
-    {
+    public void transferSong(View view) {
         Context context = MainActivity.this;
         String text = "Transferring song now";
         int duration = Toast.LENGTH_LONG;
@@ -248,15 +253,15 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Called when the play button is pressed
+     *
      * @param view
      */
-    public void playSong(View view)
-    {
+    public void playSong(View view) {
         try {
             mStream.write("play".getBytes());
 
         } catch (IOException e) {
-            Log.d("Group", "Error with command "+ e.getMessage());
+            Log.d("Group", "Error with command " + e.getMessage());
 
         }
 
@@ -269,15 +274,15 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Called when the pause button is pressed
+     *
      * @param view
      */
-    public void pauseSong(View view)
-    {
+    public void pauseSong(View view) {
         try {
             mStream.write("pause".getBytes());
 
         } catch (IOException e) {
-            Log.d("Group", "Error with command "+ e.getMessage());
+            Log.d("Group", "Error with command " + e.getMessage());
 
         }
 
@@ -287,4 +292,16 @@ public class MainActivity extends AppCompatActivity {
 
         Toast.makeText(context, text, duration).show();
     }
+
+
+    // Create a message handling object as an anonymous class.
+    private AdapterView.OnItemClickListener mMessageClickedHandler = new AdapterView.OnItemClickListener() {
+        public void onItemClick(AdapterView parent, View v, int position, long id) {
+            // Do something in response to the click
+            if (songListView != null) {
+                songListView.getChildAt(position).setBackgroundColor(Color.BLUE);
+            }
+            InputStream songInput = getResources().openRawResource(getResources().getIdentifier(songs.get(position).getName(position), "raw", getPackageName()));
+        }
+    };
 }
