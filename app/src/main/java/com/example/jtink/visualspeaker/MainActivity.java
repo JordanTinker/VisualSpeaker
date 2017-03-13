@@ -326,21 +326,16 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(context, text, duration).show();
     }
 
-
     // Create a message handling object as an anonymous class.
     private AdapterView.OnItemClickListener mMessageClickedHandler = new AdapterView.OnItemClickListener() {
         public void onItemClick(AdapterView parent, View v, int position, long id) {
             // Do something in response to the click
+            /*
             if (songListView != null) {
                 songListView.getChildAt(position).setBackgroundColor(Color.BLUE);
             }
+            */
             currentSongPath = songs.get(position).getName(position) + ".wav";
-
-
-
-
-            //InputStream songInput = getResources().openRawResource(songFileName);
-            //InputStream songInput = getResources().openRawResource(getResources().getIdentifier(songs.get(position).getName(position), "raw", getPackageName()));
         }
     };
 }
