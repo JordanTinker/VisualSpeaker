@@ -4,11 +4,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.AsyncTask;
+import android.renderscript.ScriptGroup;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -45,7 +48,9 @@ public class MainActivity extends AppCompatActivity {
     ServerSocket mSocket;
     Socket mClient;
     OutputStream mStream;
+    AssetManager assetManager;
     private boolean connected;
+    private String currentSongPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+
+        assetManager = getAssets();
 
         makeGroup();
 
@@ -180,7 +187,11 @@ public class MainActivity extends AppCompatActivity {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
-
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 mManager.requestGroupInfo(mChannel, new WifiP2pManager.GroupInfoListener() {
                     @Override
                     public void onGroupInfoAvailable(WifiP2pGroup group) {
@@ -241,12 +252,34 @@ public class MainActivity extends AppCompatActivity {
      * @param view
      */
     public void transferSong(View view) {
+        InputStream songInput;
+        try {
+            songInput = assetManager.open(currentSongPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d("Group", "File transfer error");
+            return;
+        }
+        try {
+            String cmd = "transfer " + currentSongPath;
+            mStream.write(cmd.getBytes());
+            mStream.flush();
+            byte[] buffer = new byte[1024];
+            int len = songInput.read(buffer);
+            while (len != -1) {
+                mStream.write(buffer, 0, len);
+                len = songInput.read(buffer);
+            }
+        } catch (IOException e) {
+            Log.d("Group", "Error with command " + e.getMessage());
+
+        }
+
+
+        //Toast stuff
         Context context = MainActivity.this;
         String text = "Transferring song now";
         int duration = Toast.LENGTH_LONG;
-        //ConnectionAsyncTask task = new ConnectionAsyncTask();
-        //task.execute();
-
 
         Toast.makeText(context, text, duration).show();
     }
@@ -301,7 +334,13 @@ public class MainActivity extends AppCompatActivity {
             if (songListView != null) {
                 songListView.getChildAt(position).setBackgroundColor(Color.BLUE);
             }
-            InputStream songInput = getResources().openRawResource(getResources().getIdentifier(songs.get(position).getName(position), "raw", getPackageName()));
+            currentSongPath = songs.get(position).getName(position) + ".wav";
+
+
+
+
+            //InputStream songInput = getResources().openRawResource(songFileName);
+            //InputStream songInput = getResources().openRawResource(getResources().getIdentifier(songs.get(position).getName(position), "raw", getPackageName()));
         }
     };
 }
